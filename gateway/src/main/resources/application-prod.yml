@@ -1,0 +1,45 @@
+server:
+  port: 8888
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+      routes:
+        - id: member-service
+          uri: http://localhost:8081
+          predicates:
+            - Path= /member-service/api/v1/oauth2/**, /member-service/api/v1/login/**, /member-service/api/v1/swagger-ui/**, /member-service/api/v1/v3/api-docs/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+
+        - id: member-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/member-service/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/member-service/(?<segment>.*), /$\{segment}
+#            - AuthorizationHeaderFilter
