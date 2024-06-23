@@ -1,0 +1,45 @@
+server:
+  port: 8888
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: member for login/signUp
+          predicates:
+            - Path=/member/login
+            - Method=POST,GET,PUT,DELETE
+          uri: http://localhost:8081
+          filters:
+            - RewritePath=/member/(?<segment>.*), /$\{segment}
+        - id: member for register
+          predicates:
+            - Path=/member/register
+            - Method=POST,GET,PUT,DELETE
+          uri: http://localhost:8081
+          filters:
+            - RewritePath=/member/(?<segment>.*), /$\{segment}
+        - id: member-all
+          predicates:
+            - Path=/member/**
+            - Method=POST,GET,PUT,DELETE
+          uri: http://localhost:8081
+          filters:
+            - AuthorizationHeaderFilter
+            - RewritePath=/member/(?<segment>.*), /$\{segment}
