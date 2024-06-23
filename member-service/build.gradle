@@ -1,0 +1,66 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.1'
+	id 'io.spring.dependency-management' version '1.1.5'
+}
+
+group = 'com.chuca'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// eureka
+	//implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+	// feign client
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+	// lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Swagger
+	implementation 'io.springfox:springfox-boot-starter:3.0.0'
+	implementation "io.springfox:springfox-swagger-ui:3.0.0"
+
+	// model-mapper
+	implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
+
+
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.7.5'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+
+	//google
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	runtimeOnly 'com.h2database:h2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+
+	//jwt
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
