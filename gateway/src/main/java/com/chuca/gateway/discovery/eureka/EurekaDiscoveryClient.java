@@ -4,7 +4,6 @@ import com.chuca.gateway.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-@Component
 @Profile("local")
 public class EurekaDiscoveryClient implements DiscoveryClient {
     @Override

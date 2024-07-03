@@ -41,5 +41,5 @@ spring:
             - Method=POST,GET,PUT,DELETE
           uri: http://localhost:8081
           filters:
-            - AuthorizationHeaderFilter
+#            - AuthorizationHeaderFilter
             - RewritePath=/member/(?<segment>.*), /$\{segment}

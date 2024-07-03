@@ -8,14 +8,16 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class DiscoveryClientConfig {
+    // eureka
     @Bean
-    @Profile("eureka")
+    @Profile("local")
     public DiscoveryClient eurekaDiscoveryClient() {
         return new EurekaDiscoveryClient();
     }
 
+    // Kubernetes
     @Bean
-    @Profile("kubernetes")
+    @Profile("prod")
     public DiscoveryClient kubernetesDiscoveryClient() {
         return new KubernetesDiscoveryClient();
     }

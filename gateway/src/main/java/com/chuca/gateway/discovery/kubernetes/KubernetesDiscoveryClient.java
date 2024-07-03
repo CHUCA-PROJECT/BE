@@ -2,9 +2,7 @@ package com.chuca.gateway.discovery.kubernetes;
 
 import com.chuca.gateway.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
-@Component
 @Profile("prod")
 public class KubernetesDiscoveryClient implements DiscoveryClient {
     @Override
