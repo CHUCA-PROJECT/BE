@@ -2,19 +2,22 @@ pipeline{
     agent any
 
     environment {
-        DOCKER_HUB_CREDS = 'docker-hub-credentials'
-        GITHUB_CREDS = 'github-credentials'
+        NCR_CREDS = 'ncr-credentials' // 네이버 컨테이너 레지스트리 인증 정보 ID
+        GITHUB_CREDS = 'github-credentials' // GitHub 인증 정보 ID
+        IMAGE_NAME = 'gateway-service' // Docker 이미지 이름
     }
     
     stages{
-        stage('Clone Repo'){
+        stage('Clone Github Repo'){
             steps{
-                git url: 'https://lab.ssafy.com/s08-final/S08P31A806.git',
-                    credentialsId: 'swj', // Jenkins에서 설정한 credential의 ID
+                git url: 'https://github.com/CHUCA-PROJECT/BE.git',
+                    credentialsId: '${GITHUB_CREDS}', // Jenkins에서 설정한 credential의 ID
                     branch: 'deploy-k8s-gateway'
             }
         }
 
+        // application-prod.yml 생성하는 단계 추후 추가 필요
+        
         stage('Gradle Build'){
             steps{
                 dir('gateway/'){
@@ -28,8 +31,8 @@ pipeline{
         stage('Build Docker'){
             steps{
                 script{
-                    sh "docker build -t back-gateway:${env.BUILD_NUMBER} gateway/"
-                    sh "docker tag back-gateway:${env.BUILD_NUMBER} wlwlsus/back-gateway:${env.BUILD_NUMBER}"
+                    sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} gateway/"
+                    sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
                 }
             }
         }
@@ -37,20 +40,22 @@ pipeline{
         stage('Push Docker to Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                        sh "docker push wlwlsus/back-gateway:${env.BUILD_NUMBER}"
+                    withCredentials([usernamePassword(credentialsId: "${NCR_CREDS}", usernameVariable: 'NCR_USERNAME', passwordVariable: 'NCR_PASSWORD')]) {
+                        sh "docker login ${env.NCR_REPO} -u ${NCR_USERNAME} -p ${NCR_PASSWORD}"
+                        sh "docker push ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
                         sh "docker image prune -a -f || true"
                     }
                 }
             }
         }
 
+        // 2024.07.21 수정 필요 : helm chart 저장소 생성 필요
         stage('Update k8s Manifest') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
                         sh "rm -rf allback-helm-chart"
+                        sh "git clone https://$GITHUB_USERNAME:$GITHUB_PASSWORD@github.com/chuca/your-helm-charts-repo.git'"
                         sh "git clone https://github.com/wlwlsus/allback-helm-chart.git allback-helm-chart"
                         sh "ls -al"
                         dir('allback-helm-chart/gateway') {
