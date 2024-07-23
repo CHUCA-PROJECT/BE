@@ -6,7 +6,8 @@ pipeline{
         GITHUB_CREDS = 'github-credentials' // GitHub 인증 정보 ID
         IMAGE_NAME = 'gateway-service' // Docker 이미지 이름
     }
-    
+
+    // webhook 테스트중
     stages{
         stage('Clone Github Repo'){
             steps{
