@@ -15,8 +15,6 @@ pipeline{
                     branch: 'deploy-k8s-gateway'
             }
         }
-
-        // application-prod.yml 생성하는 단계 추후 추가 필요
         
         stage('Gradle Build'){
             steps{
