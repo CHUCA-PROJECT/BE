@@ -1,5 +1,10 @@
 pipeline{
-    agent any
+    agent {
+        docker {
+            image 'docker:19.03' // 사용할 Docker 이미지
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Docker 소켓을 마운트하여 DIND 사용
+        }
+    }
 
     environment {
         NCR_CREDS = 'ncr-credentials' // 네이버 컨테이너 레지스트리 인증 정보 ID
