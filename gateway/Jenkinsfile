@@ -1,5 +1,9 @@
 pipeline{
-    agent any
+    agent {
+        kubernetes{
+            yamlFile 'KubernetesPod.yaml'
+        }
+    }
 
     environment {
         NCR_CREDS = 'ncr-credentials' // 네이버 컨테이너 레지스트리 인증 정보 ID
