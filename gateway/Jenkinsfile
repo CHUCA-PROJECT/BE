@@ -1,31 +1,51 @@
-pipeline{
+pipeline {
     agent any
-    // agent {
-    //     docker {
-    //         image 'docker:19.03' // 사용할 Docker 이미지
-    //         args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Docker 소켓을 마운트하여 DIND 사용
-    //     }
-    // }
 
     environment {
-        NCR_CREDS = 'ncr-credentials' // 네이버 컨테이너 레지스트리 인증 정보 ID
-        GITHUB_CREDS = 'github-credentials' // GitHub 인증 정보 ID
-        IMAGE_NAME = 'gateway-service' // Docker 이미지 이름
+        DOCKER_HUB_CREDS = 'docker-hub-credentials'
+        GITHUB_CREDS = 'github-credentials'
     }
+    
+    stages {
+        stage('Install Docker') {
+            steps {
+                script {
+                    sh '''
+                    if ! command -v docker &> /dev/null
+                    then
+                        echo "Docker could not be found, installing Docker..."
+                        sudo apt-get update
+                        sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+                        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                        sudo add-apt-repository \
+                           "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+                           $(lsb_release -cs) \
+                           stable"
+                        sudo apt-get update
+                        sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+                        sudo usermod -aG docker $USER
+                        sudo systemctl enable docker
+                        sudo systemctl start docker
+                        newgrp docker
+                    else
+                        echo "Docker is already installed"
+                    fi
+                    '''
+                }
+            }
+        }
 
-    // webhook 테스트중
-    stages{
-        stage('Clone Github Repo'){
-            steps{
-                git url: 'https://github.com/CHUCA-PROJECT/BE.git',
-                    credentialsId: '${GITHUB_CREDS}', // Jenkins에서 설정한 credential의 ID
+        stage('Clone Repo') {
+            steps {
+                git url: 'https://lab.ssafy.com/s08-final/S08P31A806.git',
+                    credentialsId: 'swj', // Jenkins에서 설정한 credential의 ID
                     branch: 'deploy-k8s-gateway'
             }
         }
-        
-        stage('Gradle Build'){
-            steps{
-                dir('gateway/'){
+
+        stage('Gradle Build') {
+            steps {
+                dir('gateway/') {
                     sh 'ls'
                     sh 'chmod +x ./gradlew'
                     sh './gradlew clean build'
@@ -33,41 +53,11 @@ pipeline{
             }
         }
 
-        stages {
-            stage('Install Docker') {
-                steps {
-                    script {
-                        sh '''
-                        if ! command -v docker &> /dev/null
-                        then
-                            echo "Docker could not be found, installing Docker..."
-                            sudo apt-get update
-                            sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-                            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-                            sudo add-apt-repository \
-                               "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-                               $(lsb_release -cs) \
-                               stable"
-                            sudo apt-get update
-                            sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-                            sudo usermod -aG docker $USER
-                            sudo systemctl enable docker
-                            sudo systemctl start docker
-                            newgrp docker
-                        else
-                            echo "Docker is already installed"
-                        fi
-                        '''
-                    }
-                }
-        }
-
-        
-        stage('Build Docker'){
-            steps{
-                script{
-                    sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} gateway/"
-                    sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+        stage('Build Docker') {
+            steps {
+                script {
+                    sh "docker build -t back-gateway:${env.BUILD_NUMBER} gateway/"
+                    sh "docker tag back-gateway:${env.BUILD_NUMBER} wlwlsus/back-gateway:${env.BUILD_NUMBER}"
                 }
             }
         }
@@ -75,9 +65,9 @@ pipeline{
         stage('Push Docker to Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: "${NCR_CREDS}", usernameVariable: 'NCR_USERNAME', passwordVariable: 'NCR_PASSWORD')]) {
-                        sh "docker login ${env.NCR_REPO} -u ${NCR_USERNAME} -p ${NCR_PASSWORD}"
-                        sh "docker push ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                        sh "docker push wlwlsus/back-gateway:${env.BUILD_NUMBER}"
                         sh "docker image prune -a -f || true"
                     }
                 }
@@ -88,17 +78,17 @@ pipeline{
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
-                        sh "rm -rf be-helm-chart"
-                        sh "git clone https://github.com/CHUCA-PROJECT/BE-HELM-CHART.git be-helm-chart"
+                        sh "rm -rf allback-helm-chart"
+                        sh "git clone https://github.com/wlwlsus/allback-helm-chart.git allback-helm-chart"
                         sh "ls -al"
-                        dir('be-helm-chart/gateway-chart') {
-                            sh "sed -i 's|repository: .\\+|repository: ${env.NCR_REPO}/gateway-service|' values.yaml"
+                        dir('allback-helm-chart/gateway') {
+                            sh "sed -i 's|repository: .\\+|repository: wlwlsus/back-gateway|' values.yaml"
                             sh "sed -i 's|tag: .\\+|tag: ${env.BUILD_NUMBER}|' values.yaml"
-                            sh "git config user.email 'aeea0520@gmail.com'"
-                            sh "git config user.name 'aeeazip'"
+                            sh "git config user.email 'cadqe13@gmail.com'"
+                            sh "git config user.name 'cadqe13'"
                             sh "git add ."
-                            sh "git diff-index --quiet HEAD || git commit -m 'Update gateway-service image to ${env.BUILD_NUMBER}'"
-                            sh "git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_PASSWORD@github.com/CHUCA-PROJECT/BE-HELM-CHART.git"
+                            sh "git diff-index --quiet HEAD || git commit -m 'Update back-gateway image to ${env.BUILD_NUMBER}'"
+                            sh "git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_PASSWORD@github.com/wlwlsus/allback-helm-chart.git"
                             sh "git push origin main"
                         }
                     }
