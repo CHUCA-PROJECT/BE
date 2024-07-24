@@ -54,6 +54,7 @@ pipeline{
         stage('Build Docker'){
             steps{
                 script{
+                    sh "docker --version"
                     sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} gateway/"
                     sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
                 }
