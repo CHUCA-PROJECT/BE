@@ -5,7 +5,8 @@ pipeline {
         DOCKER_HUB_CREDS = 'docker-hub-credentials'
         GITHUB_CREDS = 'github-credentials'
     }
-    
+
+    // 도커 설치 단계 추가
     stages {
         stage('Install Docker') {
             steps {
