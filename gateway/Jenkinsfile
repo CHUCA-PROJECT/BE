@@ -1,7 +1,27 @@
 pipeline{
     agent {
-        kubernetes{
-            yamlFile 'KubernetesPod.yaml'
+        kubernetes {
+            // Kubernetes Pod YAML 정의
+            yaml '''
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                  name: my-pod
+                spec:
+                  containers:
+                  - name: docker
+                    image: docker:latest
+                    command:
+                    - cat
+                    tty: true
+                    volumeMounts:
+                    - mountPath: /var/run/docker.sock
+                      name: docker-sock
+                  volumes:
+                  - name: docker-sock
+                    hostPath:
+                      path: /var/run/docker.sock
+            '''
         }
     }
 
