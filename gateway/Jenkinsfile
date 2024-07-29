@@ -1,98 +1,98 @@
-pipeline{
-    agent {
-        kubernetes {
-            // Kubernetes Pod YAML 정의
-            yaml '''
-                apiVersion: v1
-                kind: Pod
-                metadata:
-                  name: my-pod
-                spec:
-                  containers:
-                  - name: docker
-                    image: docker:latest
-                    command:
-                    - cat
-                    tty: true
-                    volumeMounts:
-                    - mountPath: /var/run/docker.sock
-                      name: docker-sock
-                  volumes:
-                  - name: docker-sock
-                    hostPath:
-                      path: /var/run/docker.sock
-            '''
-        }
-    }
+// pipeline{
+//     agent {
+//         kubernetes {
+//             // Kubernetes Pod YAML 정의
+//             yaml '''
+//                 apiVersion: v1
+//                 kind: Pod
+//                 metadata:
+//                   name: my-pod
+//                 spec:
+//                   containers:
+//                   - name: docker
+//                     image: docker:latest
+//                     command:
+//                     - cat
+//                     tty: true
+//                     volumeMounts:
+//                     - mountPath: /var/run/docker.sock
+//                       name: docker-sock
+//                   volumes:
+//                   - name: docker-sock
+//                     hostPath:
+//                       path: /var/run/docker.sock
+//             '''
+//         }
+//     }
 
-    environment {
-        NCR_CREDS = 'ncr-credentials' // 네이버 컨테이너 레지스트리 인증 정보 ID
-        GITHUB_CREDS = 'github-credentials' // GitHub 인증 정보 ID
-        IMAGE_NAME = 'gateway-service' // Docker 이미지 이름
-    }
+//     environment {
+//         NCR_CREDS = 'ncr-credentials' // 네이버 컨테이너 레지스트리 인증 정보 ID
+//         GITHUB_CREDS = 'github-credentials' // GitHub 인증 정보 ID
+//         IMAGE_NAME = 'gateway-service' // Docker 이미지 이름
+//     }
 
-    // webhook 테스트중
-    stages{
-        stage('Clone Github Repo'){
-            steps{
-                git url: 'https://github.com/CHUCA-PROJECT/BE.git',
-                    credentialsId: '${GITHUB_CREDS}', // Jenkins에서 설정한 credential의 ID
-                    branch: 'deploy-k8s-gateway'
-            }
-        }
+//     // webhook 테스트중
+//     stages{
+//         stage('Clone Github Repo'){
+//             steps{
+//                 git url: 'https://github.com/CHUCA-PROJECT/BE.git',
+//                     credentialsId: '${GITHUB_CREDS}', // Jenkins에서 설정한 credential의 ID
+//                     branch: 'deploy-k8s-gateway'
+//             }
+//         }
         
-        stage('Gradle Build'){
-            steps{
-                dir('gateway/'){
-                    sh 'ls'
-                    sh 'chmod +x ./gradlew'
-                    sh './gradlew clean build'
-                }
-            }
-        }
+//         stage('Gradle Build'){
+//             steps{
+//                 dir('gateway/'){
+//                     sh 'ls'
+//                     sh 'chmod +x ./gradlew'
+//                     sh './gradlew clean build'
+//                 }
+//             }
+//         }
 
-        stage('Build Docker'){
-            steps{
-                script{
-                    sh "docker --version"
-                    sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} gateway/"
-                    sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                }
-            }
-        }
+//         stage('Build Docker'){
+//             steps{
+//                 script{
+//                     sh "docker --version"
+//                     sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} gateway/"
+//                     sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+//                 }
+//             }
+//         }
 
-        stage('Push Docker to Docker Hub') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "${NCR_CREDS}", usernameVariable: 'NCR_USERNAME', passwordVariable: 'NCR_PASSWORD')]) {
-                        sh "docker login ${env.NCR_REPO} -u ${NCR_USERNAME} -p ${NCR_PASSWORD}"
-                        sh "docker push ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                        sh "docker image prune -a -f || true"
-                    }
-                }
-            }
-        }
+//         stage('Push Docker to Docker Hub') {
+//             steps {
+//                 script {
+//                     withCredentials([usernamePassword(credentialsId: "${NCR_CREDS}", usernameVariable: 'NCR_USERNAME', passwordVariable: 'NCR_PASSWORD')]) {
+//                         sh "docker login ${env.NCR_REPO} -u ${NCR_USERNAME} -p ${NCR_PASSWORD}"
+//                         sh "docker push ${env.NCR_REPO}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+//                         sh "docker image prune -a -f || true"
+//                     }
+//                 }
+//             }
+//         }
 
-        stage('Update k8s Manifest') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
-                        sh "rm -rf be-helm-chart"
-                        sh "git clone https://github.com/CHUCA-PROJECT/BE-HELM-CHART.git be-helm-chart"
-                        sh "ls -al"
-                        dir('be-helm-chart/gateway-chart') {
-                            sh "sed -i 's|repository: .\\+|repository: ${env.NCR_REPO}/gateway-service|' values.yaml"
-                            sh "sed -i 's|tag: .\\+|tag: ${env.BUILD_NUMBER}|' values.yaml"
-                            sh "git config user.email 'aeea0520@gmail.com'"
-                            sh "git config user.name 'aeeazip'"
-                            sh "git add ."
-                            sh "git diff-index --quiet HEAD || git commit -m 'Update gateway-service image to ${env.BUILD_NUMBER}'"
-                            sh "git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_PASSWORD@github.com/CHUCA-PROJECT/BE-HELM-CHART.git"
-                            sh "git push origin main"
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+//         stage('Update k8s Manifest') {
+//             steps {
+//                 script {
+//                     withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDS}", usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
+//                         sh "rm -rf be-helm-chart"
+//                         sh "git clone https://github.com/CHUCA-PROJECT/BE-HELM-CHART.git be-helm-chart"
+//                         sh "ls -al"
+//                         dir('be-helm-chart/gateway-chart') {
+//                             sh "sed -i 's|repository: .\\+|repository: ${env.NCR_REPO}/gateway-service|' values.yaml"
+//                             sh "sed -i 's|tag: .\\+|tag: ${env.BUILD_NUMBER}|' values.yaml"
+//                             sh "git config user.email 'aeea0520@gmail.com'"
+//                             sh "git config user.name 'aeeazip'"
+//                             sh "git add ."
+//                             sh "git diff-index --quiet HEAD || git commit -m 'Update gateway-service image to ${env.BUILD_NUMBER}'"
+//                             sh "git remote set-url origin https://$GITHUB_USERNAME:$GITHUB_PASSWORD@github.com/CHUCA-PROJECT/BE-HELM-CHART.git"
+//                             sh "git push origin main"
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
