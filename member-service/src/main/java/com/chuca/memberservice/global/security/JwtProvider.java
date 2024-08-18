@@ -2,17 +2,17 @@ package com.chuca.memberservice.global.security;
 
 import com.chuca.memberservice.domain.member.repository.MemberRepository;
 import com.chuca.memberservice.domain.member.service.MemberDetailServiceImpl;
+import com.chuca.memberservice.domain.member.dto.LoginDto;
 import com.chuca.memberservice.domain.owner.repository.OwnerRepository;
-import com.chuca.memberservice.global.dto.JwtTokenDto;
-import com.chuca.memberservice.global.security.JwtAuthenticationFilter;
+import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.util.RedisService;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.JwtException;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -67,6 +67,21 @@ public class JwtProvider {
                 .claim("memberId", memberId)
                 .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
                 .compact();
+    }
+
+    // 토큰 재발급 (access token, refresh token 둘 다 재발급)
+    public LoginDto.Response regenerateToken(String token) {
+        Long memberId = getMemberIdFromJwtToken(token);
+        String storedRefreshToken = redisService.getValues(String.valueOf(memberId));
+
+        if(storedRefreshToken == null || !storedRefreshToken.equals(token))
+            throw new BadRequestException("RefreshToken이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+
+        String newAccessToken = encodeJwtToken(memberId); // access token 재발급
+        String newRefreshToken = encodeJwtRefreshToken(memberId); // refresh token 재발급
+        storeJwtRefreshToken(memberId, newRefreshToken); // redis에 refresh 저장
+
+        return new LoginDto.Response(newAccessToken, newRefreshToken);
     }
 
     // JWT 토큰으로부터 memberId 추출

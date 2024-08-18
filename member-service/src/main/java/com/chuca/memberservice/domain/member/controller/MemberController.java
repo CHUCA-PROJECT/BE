@@ -2,7 +2,6 @@ package com.chuca.memberservice.domain.member.controller;
 
 import com.chuca.memberservice.domain.member.dto.CheckDto;
 import com.chuca.memberservice.domain.member.dto.LoginDto;
-import com.chuca.memberservice.domain.member.dto.OAuthLoginDto;
 import com.chuca.memberservice.domain.member.dto.SignUpDto;
 import com.chuca.memberservice.domain.member.service.MemberService;
 import com.chuca.memberservice.global.response.BaseResponse;
@@ -37,5 +36,11 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<BaseResponse<LoginDto.Response>> login(@RequestBody @Validated LoginDto.Request request) {
         return ResponseEntity.ok(BaseResponse.create(memberService.login(request)));
+    }
+
+    // 토큰 재발급
+    @PostMapping("/reissue")
+    public ResponseEntity<BaseResponse<LoginDto.Response>> reissue(@RequestHeader(value = "X-REFRESH-TOKEN") String token) {
+        return ResponseEntity.ok(BaseResponse.create(memberService.regenerateToken(token)));
     }
 }

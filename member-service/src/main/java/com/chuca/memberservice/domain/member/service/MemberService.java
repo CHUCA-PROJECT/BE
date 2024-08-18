@@ -90,4 +90,12 @@ public class MemberService {
 
         return new LoginDto.Response(accessToken, refreshToken);
     }
+
+    // 토큰 재발급
+    public LoginDto.Response regenerateToken(String token) {
+        if(token != null && jwtProvider.validateToken(token)) {
+            return jwtProvider.regenerateToken(token);
+        }
+        throw new BadRequestException("RefreshToken이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+    }
 }
