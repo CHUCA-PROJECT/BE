@@ -26,13 +26,19 @@ spring:
         default_batch_fetch_size: 1000
     show-sql: true
 
-  #  redis:
-  #    host: localhost
-  #    port: 6379
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
   config:
     activate:
       on-profile: local
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+
+
 #    import:
 #      application-secret.yml
 
@@ -88,6 +94,3 @@ security:
           scope:
             - email
             - profile
-
-jwt:
-  secret: ${JWT_SECRET_KEY}
