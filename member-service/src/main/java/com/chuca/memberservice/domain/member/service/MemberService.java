@@ -98,4 +98,11 @@ public class MemberService {
         }
         throw new BadRequestException("RefreshToken이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
     }
+
+    // 로그아웃
+    public boolean logout(String token) {
+        Long memberId = jwtProvider.getMemberIdFromJwtToken(token);
+        jwtProvider.expireToken(memberId, token);
+        return true;
+    }
 }

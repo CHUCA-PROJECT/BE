@@ -38,6 +38,13 @@ public class MemberController {
         return ResponseEntity.ok(BaseResponse.create(memberService.login(request)));
     }
 
+    // 로그아웃 (refresh token 유효하다는 전제 하) : 필터 거쳐야 함
+    // 요청 보냈는데 access token 만료 -> 재발급
+    @PostMapping("/logout")
+    public ResponseEntity<BaseResponse<Boolean>> logout(@RequestHeader(value = "Authentication") String token) {
+        return ResponseEntity.ok(BaseResponse.create(memberService.logout(token)));
+    }
+
     // 토큰 재발급
     @PostMapping("/reissue")
     public ResponseEntity<BaseResponse<LoginDto.Response>> reissue(@RequestHeader(value = "X-REFRESH-TOKEN") String token) {

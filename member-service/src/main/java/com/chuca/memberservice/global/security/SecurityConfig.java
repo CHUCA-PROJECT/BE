@@ -40,8 +40,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer(){
         return web -> web.ignoring()
                 .requestMatchers("/swagger-ui/**", "/swagger/**", "/swagger-resources/**", "/swagger-ui.html",
-
-                        "/configuration/ui",  "/v3/api-docs/**", "/h2-console/**", "/oauth/**", "/member/**");
+                        "/configuration/ui",  "/v3/api-docs/**", "/h2-console/**", "/oauth/**",
+                        "/member/signup", "/member/check-id", "/member/login");
     }
 
     //선언 방식이 3.x에서 바뀜
@@ -64,16 +64,12 @@ public class SecurityConfig {
 //                 JwtAuthenticationFilter를 필터에 넣음
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
-                                .requestMatchers(
-                                        AntPathRequestMatcher.antMatcher("/oauth/**")
-                                ).authenticated()
-                                .requestMatchers(
-                                        AntPathRequestMatcher.antMatcher("/member/**")
-                                ).authenticated()
-                                .requestMatchers(
-                                        AntPathRequestMatcher.antMatcher("/h2-console/**")
-                                ).permitAll()
-
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/oauth/**")).authenticated()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/signup")).authenticated()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/login")).authenticated()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/check-id")).authenticated()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**"))
+                                .permitAll()
                                 .anyRequest().authenticated()
                 )
                 .headers(
