@@ -64,11 +64,13 @@ public class SecurityConfig {
 //                 JwtAuthenticationFilter를 필터에 넣음
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
-                                .requestMatchers(AntPathRequestMatcher.antMatcher("/oauth/**")).authenticated()
-                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/signup")).authenticated()
-                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/login")).authenticated()
-                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/check-id")).authenticated()
-                                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**"))
+                                .requestMatchers(
+                                        "/oauth/**",
+                                        "/member/signup",
+                                        "/member/login",
+                                        "/member/check-id",
+                                        "/h2-console/**"
+                                )
                                 .permitAll()
                                 .anyRequest().authenticated()
                 )

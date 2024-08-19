@@ -1,9 +1,9 @@
 package com.chuca.memberservice.global.security;
 
-import com.chuca.memberservice.domain.member.repository.MemberRepository;
-import com.chuca.memberservice.domain.member.service.MemberDetailServiceImpl;
-import com.chuca.memberservice.domain.member.dto.LoginDto;
-import com.chuca.memberservice.domain.owner.repository.OwnerRepository;
+import com.chuca.memberservice.domain.member.domain.repository.MemberRepository;
+import com.chuca.memberservice.domain.member.domain.service.MemberDetailServiceImpl;
+import com.chuca.memberservice.domain.member.application.dto.LoginDto;
+import com.chuca.memberservice.domain.domain.repository.OwnerRepository;
 import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.util.RedisService;
 import io.jsonwebtoken.*;
@@ -18,9 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Base64;
 import java.util.Date;
 
 @Slf4j

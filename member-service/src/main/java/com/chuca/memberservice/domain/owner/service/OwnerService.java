@@ -1,14 +1,14 @@
 //package com.chuca.memberservice.domain.owner.service;
 //
-//import com.chuca.memberservice.domain.owner.constant.Bank;
+//import com.chuca.memberservice.domain.domain.constant.Bank;
 //import com.chuca.memberservice.domain.owner.dto.BankDto;
 //import com.chuca.memberservice.domain.owner.dto.CafeDto;
 //import com.chuca.memberservice.domain.owner.dto.LoginDto;
 //import com.chuca.memberservice.domain.owner.dto.OwnerDto;
-//import com.chuca.memberservice.domain.owner.entity.Cafe;
-//import com.chuca.memberservice.domain.owner.entity.Owner;
-//import com.chuca.memberservice.domain.owner.repository.CafeRepository;
-//import com.chuca.memberservice.domain.owner.repository.OwnerRepository;
+//import com.chuca.memberservice.domain.domain.entity.Cafe;
+//import com.chuca.memberservice.domain.domain.entity.Owner;
+//import com.chuca.memberservice.domain.domain.repository.CafeRepository;
+//import com.chuca.memberservice.domain.domain.repository.OwnerRepository;
 //import com.chuca.memberservice.global.dto.BusinessDto;
 //import com.chuca.memberservice.global.dto.PortOneDto;
 //import com.chuca.memberservice.global.dto.TokenDto;
