@@ -1,6 +1,6 @@
 package com.chuca.memberservice.domain.owner.dto;
 
-import com.chuca.memberservice.domain.domain.constant.Bank;
+import com.chuca.memberservice.domain.owner.domain.constant.Bank;
 import com.chuca.memberservice.global.annotation.Enum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

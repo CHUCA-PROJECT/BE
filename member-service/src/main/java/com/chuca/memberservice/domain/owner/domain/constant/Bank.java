@@ -1,4 +1,4 @@
-package com.chuca.memberservice.domain.domain.constant;
+package com.chuca.memberservice.domain.owner.domain.constant;
 
 public enum Bank {
     /*

@@ -32,4 +32,9 @@ public class LoginUseCase {
 
         return new LoginDto.Response(accessToken, refreshToken);
     }
+
+    // 로그아웃
+    public boolean logout(String token) {
+        return memberService.logout(token);
+    }
 }

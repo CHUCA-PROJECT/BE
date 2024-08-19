@@ -3,7 +3,7 @@ package com.chuca.memberservice.global.security;
 import com.chuca.memberservice.domain.member.domain.repository.MemberRepository;
 import com.chuca.memberservice.domain.member.domain.service.MemberDetailServiceImpl;
 import com.chuca.memberservice.domain.member.application.dto.LoginDto;
-import com.chuca.memberservice.domain.domain.repository.OwnerRepository;
+import com.chuca.memberservice.domain.owner.domain.repository.OwnerRepository;
 import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.util.RedisService;
 import io.jsonwebtoken.*;

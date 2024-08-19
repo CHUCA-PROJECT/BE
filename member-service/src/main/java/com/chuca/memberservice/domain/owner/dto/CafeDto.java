@@ -1,6 +1,6 @@
 package com.chuca.memberservice.domain.owner.dto;
 
-import com.chuca.memberservice.domain.domain.entity.Cafe;
+import com.chuca.memberservice.domain.owner.domain.entity.Cafe;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

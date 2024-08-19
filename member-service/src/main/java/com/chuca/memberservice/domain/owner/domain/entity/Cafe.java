@@ -1,4 +1,4 @@
-package com.chuca.memberservice.domain.domain.entity;
+package com.chuca.memberservice.domain.owner.domain.entity;
 
 import com.chuca.memberservice.domain.owner.dto.CafeDto;
 import com.chuca.memberservice.global.entity.BaseTime;

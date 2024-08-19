@@ -1,6 +1,6 @@
-package com.chuca.memberservice.domain.domain.repository;
+package com.chuca.memberservice.domain.owner.domain.repository;
 
-import com.chuca.memberservice.domain.domain.entity.Owner;
+import com.chuca.memberservice.domain.owner.domain.entity.Owner;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

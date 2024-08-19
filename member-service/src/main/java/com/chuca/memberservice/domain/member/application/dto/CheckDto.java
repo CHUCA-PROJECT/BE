@@ -10,7 +10,7 @@ public class CheckDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
     @Builder
-    public static class idRequest {
+    public static class IdRequest {
         @NotEmpty
         private String generalId;
     }
@@ -27,7 +27,7 @@ public class CheckDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
     @Builder
-    public static class nicknameRequest {
+    public static class NicknameRequest {
         @NotEmpty
         private String nickname;
     }

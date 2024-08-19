@@ -1,5 +1,6 @@
 package com.chuca.memberservice.domain.member.application.usecase;
 
+import com.chuca.memberservice.domain.member.application.dto.CheckDto;
 import com.chuca.memberservice.domain.member.application.dto.SignUpDto;
 import com.chuca.memberservice.domain.member.domain.entity.Member;
 import com.chuca.memberservice.domain.member.domain.service.MemberService;
@@ -19,11 +20,11 @@ public class SignUpUseCase {
     
     // 회원가입
     public SignUpDto.Response signup(SignUpDto.Request request) {
-        if(!memberService.checkId(request.getGeneralId()).isCheck()) {
+        if(!checkId(request.getGeneralId()).isCheck()) {
             throw new BadRequestException("이미 가입한 아이디입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        if(!memberService.checkNickname(request.getNickname()).isCheck()) {
+        if(!checkNickname(request.getNickname()).isCheck()) {
             throw new BadRequestException("이미 존재하는 닉네임입니다.", HttpStatus.BAD_REQUEST);
         }
 
@@ -34,4 +35,18 @@ public class SignUpUseCase {
         
         return new SignUpDto.Response(accessToken, refreshToken);
     }
+
+    // 아이디 중복 확인
+    public CheckDto.Response checkId(String generalId) {
+        boolean isDuplicated = memberService.checkId(generalId);
+        return new CheckDto.Response(isDuplicated);
+    }
+
+    // 닉네임 중복 확인
+    public CheckDto.Response checkNickname(String nickname) {
+        boolean isDuplicated = memberService.checkNickname(nickname);
+        return new CheckDto.Response(isDuplicated);
+    }
+
+    // 휴대폰 인증
 }

@@ -45,19 +45,19 @@ public class MemberService {
     }
 
     // 아이디 중복 확인
-    public CheckDto.Response checkId(String generalId) {
+    public boolean checkId(String generalId) {
         Optional<Member> member = memberRepository.findByGeneralId(generalId);
         if(member.isPresent())
-            return new CheckDto.Response(false);    // 이미 존재하기에 사용 불가능
-        return new CheckDto.Response(true);
+            return false;    // 이미 존재하기에 사용 불가능
+        return true;
     }
 
     // 닉네임 중복 확인
-    public CheckDto.Response checkNickname(String nickname) {
+    public boolean checkNickname(String nickname) {
         Optional<Member> member = memberRepository.findByNickname(nickname);
         if(member.isPresent())
-            return new CheckDto.Response(false);    // 이미 존재하기에 사용 불가능
-        return new CheckDto.Response(true);
+            return false;    // 이미 존재하기에 사용 불가능
+        return true;
     }
 
     // 회원 조회
@@ -74,14 +74,6 @@ public class MemberService {
             throw new BadRequestException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
         return true;
-    }
-
-    // 토큰 재발급
-    public LoginDto.Response regenerateToken(String token) {
-        if(token != null && jwtProvider.validateToken(token)) {
-            return jwtProvider.regenerateToken(token);
-        }
-        throw new BadRequestException("RefreshToken이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
     }
 
     // 로그아웃

@@ -1,6 +1,6 @@
 package com.chuca.memberservice.domain.owner.dto;
 
-import com.chuca.memberservice.domain.domain.constant.Bank;
+import com.chuca.memberservice.domain.owner.domain.constant.Bank;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
