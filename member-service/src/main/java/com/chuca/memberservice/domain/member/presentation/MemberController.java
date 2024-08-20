@@ -7,7 +7,9 @@ import com.chuca.memberservice.domain.member.application.usecase.LoginUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.ReissueUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.SignUpUseCase;
 import com.chuca.memberservice.global.response.BaseResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +46,8 @@ public class MemberController {
     // 로그아웃 (refresh token 유효하다는 전제 하) : 필터 거쳐야 함
     // 요청 보냈는데 access token 만료 -> 재발급
     @PostMapping("/logout")
-    public ResponseEntity<BaseResponse<Boolean>> logout(@RequestHeader(value = "Authentication") String token) {
-        return ResponseEntity.ok(BaseResponse.create(loginUseCase.logout(token)));
+    public ResponseEntity<BaseResponse<Boolean>> logout(HttpServletRequest request) {
+        return ResponseEntity.ok(BaseResponse.create(loginUseCase.logout(request)));
     }
 
     // 토큰 재발급

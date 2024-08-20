@@ -21,8 +21,6 @@ public class MemberDetailServiceImpl implements UserDetailsService {
         System.out.println("로그인한 memberId : " + memberId);
         UserDetails result = (UserDetails) memberRepository.findById(Long.parseLong(memberId))
                 .orElseThrow(() -> new BadRequestException("해당하는 사용자를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST));
-        log.info("UserDetails: " + result.toString());
-
         return result;
     }
 }

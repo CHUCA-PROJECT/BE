@@ -6,6 +6,7 @@ import com.chuca.memberservice.domain.member.domain.service.MemberService;
 import com.chuca.memberservice.global.annotation.UseCase;
 import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.security.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,8 @@ public class LoginUseCase {
     }
 
     // 로그아웃
-    public boolean logout(String token) {
+    public boolean logout(HttpServletRequest request) {
+        String token = jwtProvider.resolveToken(request);
         return memberService.logout(token);
     }
 }

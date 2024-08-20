@@ -19,6 +19,6 @@ public class ReissueUseCase {
         if (token != null && jwtProvider.validateToken(token)) {
             return jwtProvider.regenerateToken(token);
         }
-        throw new BadRequestException("RefreshToken이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+        throw new BadRequestException("RefreshToken이 존재하지 않거나 만료되었습니다.", HttpStatus.BAD_REQUEST);
     }
 }
