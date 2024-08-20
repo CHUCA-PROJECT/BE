@@ -3,6 +3,7 @@ package com.chuca.memberservice.domain.member.domain.service;
 import com.chuca.memberservice.domain.member.application.dto.CheckDto;
 import com.chuca.memberservice.domain.member.application.dto.LoginDto;
 import com.chuca.memberservice.domain.member.application.dto.SignUpDto;
+import com.chuca.memberservice.domain.member.domain.constant.Role;
 import com.chuca.memberservice.domain.member.domain.entity.Member;
 import com.chuca.memberservice.domain.member.domain.repository.MemberRepository;
 import com.chuca.memberservice.global.exception.BadRequestException;
@@ -37,7 +38,8 @@ public class MemberService {
                         request.isLocTos(),
                         request.isAdTos(),
                         request.getNickname(),
-                        request.getProfileImage()
+                        request.getProfileImage(),
+                        Role.USER
                 )
         );
 

@@ -71,8 +71,8 @@ public class SecurityConfig {
                                         "/member/check-id",
                                         "/member/reissue",
                                         "/h2-console/**"
-                                )
-                                .permitAll()
+                                ).permitAll()
+                                .requestMatchers("/test").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .headers(

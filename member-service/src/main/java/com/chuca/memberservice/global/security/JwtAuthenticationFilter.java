@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtProvider jwtProvider) {
         super(authenticationManager);
-        this.jwtProvider =jwtProvider;
+        this.jwtProvider = jwtProvider;
 
     }
 
@@ -39,6 +39,8 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
         if (StringUtils.isNotEmpty(token) && jwtProvider.validateToken(token)) {
             log.info("토큰 검증");
             Authentication authentication = jwtProvider.getAuthentication(token);   // 권한
+
+            log.info("토큰 검증 완료");
 
             // security 세션에 등록
             SecurityContextHolder.getContext().setAuthentication(authentication);
