@@ -113,15 +113,12 @@ public class Member extends BaseTime implements UserDetails {
     /**** UserDetails 오버라이딩 메소드 ****/
 
     /*
-     * 유저의 권한 목록 반환
+     * 유저의 권한 반환
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         ArrayList<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-        // simpleGrantedAuthorities.add(new SimpleGrantedAuthority(role.getRole()));
-        simpleGrantedAuthorities.add(new SimpleGrantedAuthority(role.name()));
-        log.info("role.getRole() : {}", role.getRole());
-        log.info("simpleGrantedAuthorities : {}", simpleGrantedAuthorities.get(0));
+        simpleGrantedAuthorities.add(new SimpleGrantedAuthority(role.getRole()));
         return simpleGrantedAuthorities;
     }
 
