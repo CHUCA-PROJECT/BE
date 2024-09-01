@@ -40,8 +40,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer(){
         return web -> web.ignoring()
                 .requestMatchers("/swagger-ui/**", "/swagger/**", "/swagger-resources/**", "/swagger-ui.html",
-
-                        "/configuration/ui",  "/v3/api-docs/**", "/h2-console/**", "/oauth/**", "/member/**");
+                        "/configuration/ui",  "/v3/api-docs/**", "/h2-console/**", "/oauth/**",
+                        "/member/signup", "/member/check-id", "/member/login", "/member/reissue");
     }
 
     //선언 방식이 3.x에서 바뀜
@@ -58,23 +58,23 @@ public class SecurityConfig {
                 .formLogin(Customizer.withDefaults())
                 .sessionManagement((sessionManagement) ->
                                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                        세션을 사용하지 않는다고 설정함
                 )
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration), jwtProvider))
-//                 JwtAuthenticationFilter를 필터에 넣음
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
                                 .requestMatchers(
-                                        AntPathRequestMatcher.antMatcher("/oauth/**")
-                                ).authenticated()
-                                .requestMatchers(
-                                        AntPathRequestMatcher.antMatcher("/member/**")
-                                ).authenticated()
-                                .requestMatchers(
-                                        AntPathRequestMatcher.antMatcher("/h2-console/**")
+                                        "/oauth/**",
+                                        "/member/signup",
+                                        "/member/login",
+                                        "/member/check-id",
+                                        "/member/reissue",
+                                        "/h2-console/**"
                                 ).permitAll()
-
+                                .requestMatchers("/test").hasRole("ADMIN") // 내부적으로 ROLE_ prefix 자동으로 붙임
                                 .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .accessDeniedHandler(new CustomAccessDeniedHandler()) // 커스텀 AccessDeniedHandler 등록 (요청 권한 없을 때 에러 처리)
                 )
                 .headers(
                         headersConfigurer ->
