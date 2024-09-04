@@ -13,7 +13,7 @@ public class UnauthorizedException extends BaseException {
     }
 
     public UnauthorizedException(String message, HttpStatus httpStatus) {
-        super(ErrorCode.BAD_REQUEST, message, httpStatus);
+        super(ErrorCode.UNAUTHORIZED, message, httpStatus);
         this.message = message;
     }
 }

@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtProvider jwtProvider) {
         super(authenticationManager);
-        this.jwtProvider =jwtProvider;
+        this.jwtProvider = jwtProvider;
 
     }
 
@@ -37,10 +37,11 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
         // 토큰이 존재 여부 + 토큰 검증
         if (StringUtils.isNotEmpty(token) && jwtProvider.validateToken(token)) {
-            log.info("토큰 검증");
             Authentication authentication = jwtProvider.getAuthentication(token);   // 권한
+            log.info("토큰 검증 완료");
 
             // security 세션에 등록
+            log.info("security 세션에 등록 ");
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.debug("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
         }
@@ -53,6 +54,5 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
         }
 
         chain.doFilter(request, response);
-
     }
 }
