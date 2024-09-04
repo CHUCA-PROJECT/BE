@@ -21,27 +21,23 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: member for login/signUp
+        - id: member for login/signup/check-id/reissue
           predicates:
             - Path=/member/login
-            - Method=POST,GET,PUT,DELETE
+            - Path=/member/signup
+            - Path=/member/check-id
+            - Path=/member/reissue
+            - Method=POST,GET,PUT,DELETE,PATCH
           uri: http://localhost:8081
           filters:
-            - RewritePath=/member/(?<segment>.*), /$\{segment}
-        - id: member for register
-          predicates:
-            - Path=/member/register
-            - Method=POST,GET,PUT,DELETE
-          uri: http://localhost:8081
-          filters:
-            - RewritePath=/member/(?<segment>.*), /$\{segment}
+            - RewritePath=/member/(?<segment>.*), /$\{segment
         - id: member-all
           predicates:
             - Path=/member/**
-            - Method=POST,GET,PUT,DELETE
+            - Method=POST,GET,PUT,DELETE,PATCH
           uri: http://localhost:8081
           filters:
-#            - AuthorizationHeaderFilter
+            - AuthorizationHeaderFilter
             - RewritePath=/member/(?<segment>.*), /$\{segment}
 
 jwt:

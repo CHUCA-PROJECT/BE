@@ -2,12 +2,12 @@ package com.chuca.gateway.global.filter;
 
 import com.chuca.gateway.global.security.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 
 // Gateway로 요청 들어올 때 JWT 토큰 유효성 검사하는 필터
@@ -47,16 +47,19 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             String authorizationHeader = headers.get(HttpHeaders.AUTHORIZATION).get(0);
 
             // JWT 토큰 판별
-            String token = authorizationHeader.replace("Bearer", "");
+            String token = authorizationHeader.replace("Bearer ", "");
 
-            boolean result = jwtProvider.validateToken(token);
-
-            ServerHttpRequest newRequest = request.mutate()
-                    .header("user-id", subject)
-                    .build();
+            boolean isValid = jwtProvider.validateToken(token);
+//            if(!isValid) {
+//                // 유효하지 않은 토큰일 경우 401 Unauthorized 응답
+//                ServerHttpResponse response = exchange.getResponse();
+//                response.setStatusCode(HttpStatus.UNAUTHORIZED);
+//                log.warn("Invalid JWT token: {}", token);
+//                return response.setComplete();
+//            }
 
             log.info("AuthorizationHeaderFilter End");
-            return chain.filter(exchange.mutate().request(newRequest).build());
+            return chain.filter(exchange);
         };
     }
 }
