@@ -28,9 +28,9 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try{
-            log.info("exception filter");
+            log.info("---------------------------------------------exception filter---------------------------------------------");
             doFilter(request,response,filterChain);
-            log.info("jwt success");
+            log.info("jwt success!");
         } catch (NullPointerException e) {
             final Map<String, Object> body = new HashMap<>();
             final ObjectMapper mapper = new ObjectMapper();

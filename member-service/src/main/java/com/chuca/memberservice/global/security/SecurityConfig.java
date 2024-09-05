@@ -1,6 +1,7 @@
 package com.chuca.memberservice.global.security;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -52,6 +53,7 @@ public class SecurityConfig {
 
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        log.info("SecurityFilterChain start");
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -85,6 +87,7 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);
 
+        log.info("SecurityFilterChain end");
         return http.build();
     }
 }
