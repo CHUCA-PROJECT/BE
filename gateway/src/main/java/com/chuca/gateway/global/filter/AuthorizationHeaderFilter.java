@@ -41,7 +41,6 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
                         .header("memberId", "guest")
                         .build();
                 return chain.filter(exchange.mutate().request(newRequest).build());
-
             }
 
             String authorizationHeader = headers.get(HttpHeaders.AUTHORIZATION).get(0);

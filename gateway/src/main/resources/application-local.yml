@@ -30,7 +30,8 @@ spring:
             - Method=POST,GET,PUT,DELETE,PATCH
           uri: http://localhost:8081
           filters:
-            - RewritePath=/member/(?<segment>.*), /$\{segment
+            - LoggingFilter
+            - RewritePath=/member/(?<segment>.*), /$\{segment}
         - id: member-all
           predicates:
             - Path=/member/**
@@ -39,6 +40,7 @@ spring:
           filters:
             - AuthorizationHeaderFilter
             - RewritePath=/member/(?<segment>.*), /$\{segment}
+
 
 jwt:
   secret: ${JWT_SECRET_KEY}
