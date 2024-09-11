@@ -38,17 +38,12 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
         // 토큰이 존재 여부 + 토큰 검증
         if (StringUtils.isNotEmpty(token) && jwtProvider.validateToken(token)) {
             Authentication authentication = jwtProvider.getAuthentication(token);   // 권한
-            log.info("토큰 검증 완료");
 
             // security 세션에 등록
             log.info("security 세션에 등록 ");
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.debug("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
-        }
-        else if (StringUtils.isEmpty(token)){ // 널일때
-            throw new NullPointerException();
-        }
-        else if(!jwtProvider.validateToken(token)){
+        } else if(StringUtils.isNotEmpty(token) && !jwtProvider.validateToken(token)){
             log.debug("유효한 JWT 토큰이 없습니다, uri: {} ", requestURI);
             throw new ExpiredJwtException(null, null, "유효한 JWT 토큰이 없습니다");
         }
