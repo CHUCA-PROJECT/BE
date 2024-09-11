@@ -10,6 +10,9 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+#logging:
+#  level:
+#    org.springframework.cloud.gateway: DEBUG
 
 spring:
   config:
@@ -21,17 +24,32 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: member for login/signup/check-id/reissue
+        # 원래 login,signup, check-id, reissue 리스트 형식으로 한 번에 작성 -> 적용 안됨
+        - id: member-for-login
           predicates:
             - Path=/member/login
-            - Path=/member/signup
-            - Path=/member/check-id
-            - Path=/member/reissue
-            - Method=POST,GET,PUT,DELETE,PATCH
+            - Method=POST
           uri: http://localhost:8081
-          filters:
-            - LoggingFilter
-            - RewritePath=/member/(?<segment>.*), /$\{segment}
+
+        - id: member-for-signup
+          predicates:
+            - Path=/member/signup
+            - Method=POST
+          uri: http://localhost:8081
+
+        - id: member-for-check-id
+          predicates:
+            - Path=/member/check-id
+            - Method=GET
+          uri: http://localhost:8081
+
+        - id: member-for-reissue
+          predicates:
+            - Path=/member/reissue
+            - Method=POST
+          uri: http://localhost:8081
+
+        # 위의 uri 제외한 나머지 member 서비스의 요청 처리
         - id: member-all
           predicates:
             - Path=/member/**
@@ -39,7 +57,6 @@ spring:
           uri: http://localhost:8081
           filters:
             - AuthorizationHeaderFilter
-            - RewritePath=/member/(?<segment>.*), /$\{segment}
 
 
 jwt:

@@ -6,9 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 // Gateway로 요청 들어올 때 JWT 토큰 유효성 검사하는 필터
 @Component
@@ -37,28 +40,42 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
             HttpHeaders headers = request.getHeaders();
             if (!headers.containsKey(HttpHeaders.AUTHORIZATION)) {
-                ServerHttpRequest newRequest = request.mutate()
-                        .header("memberId", "guest")
-                        .build();
-                return chain.filter(exchange.mutate().request(newRequest).build());
+                return OnError(exchange, "로그인이 필요한 서비스입니다.", HttpStatus.UNAUTHORIZED);
             }
 
             String authorizationHeader = headers.get(HttpHeaders.AUTHORIZATION).get(0);
-
-            // JWT 토큰 판별
-            String token = authorizationHeader.replace("Bearer ", "");
+            String token = authorizationHeader.replace("Bearer ", ""); // 토큰 추출
 
             boolean isValid = jwtProvider.validateToken(token);
-//            if(!isValid) {
-//                // 유효하지 않은 토큰일 경우 401 Unauthorized 응답
-//                ServerHttpResponse response = exchange.getResponse();
-//                response.setStatusCode(HttpStatus.UNAUTHORIZED);
-//                log.warn("Invalid JWT token: {}", token);
-//                return response.setComplete();
-//            }
+            if(!isValid) {
+                return OnError(exchange, "Jwt token is not vaild", HttpStatus.UNAUTHORIZED);
+            }
 
             log.info("AuthorizationHeaderFilter End");
             return chain.filter(exchange);
         };
     }
+
+    // Mono, Flux => Spring WebFlux
+    private Mono<Void> OnError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
+        ServerHttpResponse response = exchange.getResponse();
+        response.setStatusCode(httpStatus);
+
+        log.error(err);
+        return response.setComplete();
+    }
+//
+//    private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
+//        ServerHttpResponse response = exchange.getResponse();
+//        response.setStatusCode(httpStatus);
+//        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+//
+//        // 에러 메시지를 JSON으로 변환
+//        String errorMessage = String.format("{\"error\": \"%s\"}", err);
+//        DataBufferFactory dataBufferFactory = response.bufferFactory();
+//        DataBuffer dataBuffer = dataBufferFactory.wrap(errorMessage.getBytes(StandardCharsets.UTF_8));
+//
+//        log.error(err);
+//        return response.writeWith(Mono.just(dataBuffer));
+//    }
 }
