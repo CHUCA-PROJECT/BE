@@ -27,9 +27,9 @@ public class LoginUseCase {
         if(!result)
             throw new BadRequestException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
 
-        String accessToken = jwtProvider.encodeJwtToken(member.getId()); // 1. 액세스 토큰 발급
-        String refreshToken = jwtProvider.encodeJwtRefreshToken(member.getId()); // 2. 리프레시 토큰 발급
-        jwtProvider.storeJwtRefreshToken(member.getId(), refreshToken); // 3. 리프레시 redis에 저장
+        String accessToken = jwtProvider.encodeJwtToken(member.getId(), member.getRole()); // 1. 액세스 토큰 발급
+        String refreshToken = jwtProvider.encodeJwtRefreshToken(member.getId(), member.getRole()); // 2. 리프레시 토큰 발급
+        jwtProvider.storeJwtRefreshToken(member.getId(), member.getRole(), refreshToken); // 3. 리프레시 redis에 저장
 
         return new LoginDto.Response(accessToken, refreshToken);
     }

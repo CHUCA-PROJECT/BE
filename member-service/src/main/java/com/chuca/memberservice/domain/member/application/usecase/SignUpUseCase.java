@@ -29,9 +29,9 @@ public class SignUpUseCase {
         }
 
         Member member = memberService.signup(request); // 1. 회원 DB에 저장
-        String accessToken = jwtProvider.encodeJwtToken(member.getId()); // 2. access token 발급
-        String refreshToken = jwtProvider.encodeJwtRefreshToken(member.getId()); // 3. refresh token 발급
-        jwtProvider.storeJwtRefreshToken(member.getId(), refreshToken); // 4. redis에 refresh token 저장
+        String accessToken = jwtProvider.encodeJwtToken(member.getId(), member.getRole()); // 2. access token 발급
+        String refreshToken = jwtProvider.encodeJwtRefreshToken(member.getId(), member.getRole()); // 3. refresh token 발급
+        jwtProvider.storeJwtRefreshToken(member.getId(), member.getRole(), refreshToken); // 4. redis에 refresh token 저장
         
         return new SignUpDto.Response(accessToken, refreshToken);
     }

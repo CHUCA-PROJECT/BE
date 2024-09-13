@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -60,8 +61,8 @@ public class KakaoOauthService {
     // accessToken, refreshToken 발급
     @Transactional
     public OAuthLoginDto.Response createToken(Member member) {
-        String newAccessToken = jwtProvider.encodeJwtToken(member.getId());
-        String newRefreshToken = jwtProvider.encodeJwtRefreshToken(member.getId());
+        String newAccessToken = jwtProvider.encodeJwtToken(member.getId(), member.getRole());
+        String newRefreshToken = jwtProvider.encodeJwtRefreshToken(member.getId(), member.getRole());
 
         System.out.println("newAccessToken : " + newAccessToken);
         System.out.println("newRefreshToken : " + newRefreshToken);
@@ -84,7 +85,8 @@ public class KakaoOauthService {
         if(!jwtProvider.validateToken(refreshToken))  // refresh token 유효성 검사
             throw new BadRequestException("유효하지 않은 Refresh Token입니다. 다시 로그인하세요.", HttpStatus.UNAUTHORIZED);
 
-        Long memberId = jwtProvider.getMemberIdFromJwtToken(refreshToken);
+        Map<String, Object> memberInfo = jwtProvider.getMemberInfoFromJwtToken(refreshToken);
+        Long memberId = (Long) memberInfo.get("memberId");
         log.info("memberId : " + memberId);
 
         Optional<Member> getMember = memberRepository.findById(memberId);
@@ -95,8 +97,8 @@ public class KakaoOauthService {
 //        if(!refreshToken.equals(member.getRefreshToken()))
 //            throw new ExceptionHandler(REFRESH_TOKEN_UNAUTHORIZED);
 
-        String newRefreshToken = jwtProvider.encodeJwtRefreshToken(memberId);
-        String newAccessToken = jwtProvider.encodeJwtToken(memberId);
+        String newRefreshToken = jwtProvider.encodeJwtRefreshToken(memberId, member.getRole());
+        String newAccessToken = jwtProvider.encodeJwtToken(memberId, member.getRole());
 
 //        member.updateRefreshToken(newRefreshToken);
         memberRepository.save(member);
