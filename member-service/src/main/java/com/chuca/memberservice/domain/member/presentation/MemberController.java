@@ -6,11 +6,13 @@ import com.chuca.memberservice.domain.member.application.dto.SignUpDto;
 import com.chuca.memberservice.domain.member.application.usecase.LoginUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.ReissueUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.SignUpUseCase;
+import com.chuca.memberservice.domain.member.domain.entity.Member;
 import com.chuca.memberservice.global.response.BaseResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,5 +56,11 @@ public class MemberController {
     @PostMapping("/reissue")
     public ResponseEntity<BaseResponse<LoginDto.Response>> reissue(@RequestHeader(value = "X-REFRESH-TOKEN") String token) {
         return ResponseEntity.ok(BaseResponse.create(reissueUseCase.regenerateToken(token)));
+    }
+
+    // 테스트용
+    @GetMapping("/test-gateway")
+    public ResponseEntity<BaseResponse<String>> testGateway(@AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(BaseResponse.create(member.getGeneralId()));
     }
 }

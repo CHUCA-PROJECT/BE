@@ -10,6 +10,9 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+#logging:
+#  level:
+#    org.springframework.cloud.gateway: DEBUG
 
 spring:
   config:
@@ -21,25 +24,24 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: member for login/signUp
+        - id: member-for-login/signup/check-id/reissue
           predicates:
-            - Path=/member/login
-            - Method=POST,GET,PUT,DELETE
+            - Path=/api/v1/member/login, /api/v1/member/signup, /api/v1/member/check-id, /api/v1/member/reissue
+            - Method=POST,GET
           uri: http://localhost:8081
           filters:
-            - RewritePath=/member/(?<segment>.*), /$\{segment}
-        - id: member for register
-          predicates:
-            - Path=/member/register
-            - Method=POST,GET,PUT,DELETE
-          uri: http://localhost:8081
-          filters:
-            - RewritePath=/member/(?<segment>.*), /$\{segment}
+            - RewritePath=/api/v1/(?<segment>.*), /${segment}
+
+        # 위의 uri 제외한 나머지 member 서비스의 요청 처리
         - id: member-all
           predicates:
-            - Path=/member/**
-            - Method=POST,GET,PUT,DELETE
+            - Path=/api/v1/member/**
+            - Method=POST,GET,PUT,DELETE,PATCH
           uri: http://localhost:8081
           filters:
-#            - AuthorizationHeaderFilter
-            - RewritePath=/member/(?<segment>.*), /$\{segment}
+            - AuthorizationHeaderFilter
+            - RewritePath=/api/v1/(?<segment>.*), /${segment}
+
+
+jwt:
+  secret: ${JWT_SECRET_KEY}

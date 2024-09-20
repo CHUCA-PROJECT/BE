@@ -1,6 +1,19 @@
 server:
   port: 8888
 
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+#logging:
+#  level:
+#    org.springframework.cloud.gateway: DEBUG
+
 spring:
   config:
     activate:
@@ -10,36 +23,25 @@ spring:
     name: gateway-service
   cloud:
     gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOriginPatterns: "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - PATCH
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
-            maxAge: 3600
       routes:
-        - id: member-service
-          uri: http://localhost:8081
+        - id: member-for-login/signup/check-id/reissue
           predicates:
-            - Path= /member-service/api/v1/oauth2/**, /member-service/api/v1/login/**, /member-service/api/v1/swagger-ui/**, /member-service/api/v1/v3/api-docs/**
+            - Path=/api/v1/member/login, /api/v1/member/signup, /api/v1/member/check-id, /api/v1/member/reissue
+            - Method=POST,GET
+          uri: http://localhost:8081
           filters:
-            - RemoveRequestHeader=Cookie
-            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+            - RewritePath=/api/v1/(?<segment>.*), /${segment}
 
-        - id: member-service
-          uri: http://localhost:8081
+        # 위의 uri 제외한 나머지 member 서비스의 요청 처리
+        - id: member-all
           predicates:
-            - Path=/member-service/**
+            - Path=/api/v1/member/**
+            - Method=POST,GET,PUT,DELETE,PATCH
+          uri: http://localhost:8081
           filters:
-            - RemoveRequestHeader=Cookie
-            - RewritePath=/member-service/(?<segment>.*), /$\{segment}
-#            - AuthorizationHeaderFilter
+            - AuthorizationHeaderFilter
+            - RewritePath=/api/v1/(?<segment>.*), /${segment}
+
+
+jwt:
+  secret: ${JWT_SECRET_KEY}

@@ -1,6 +1,7 @@
 package com.chuca.memberservice.global.security;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,12 +15,14 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -52,7 +55,6 @@ public class SecurityConfig {
 
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
@@ -60,16 +62,14 @@ public class SecurityConfig {
                                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(authenticationConfiguration), jwtProvider))
-                .authorizeHttpRequests((authorizeRequests) ->
-                        authorizeRequests
-                                .requestMatchers(
-                                        "/oauth/**",
-                                        "/member/signup",
-                                        "/member/login",
-                                        "/member/check-id",
-                                        "/member/reissue",
-                                        "/h2-console/**"
-                                ).permitAll()
+                .authorizeHttpRequests(authorizeRequest ->
+                        authorizeRequest
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/auth/**")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/signup")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/login")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/check-id")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/reissue")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                                 .requestMatchers("/test").hasRole("ADMIN") // 내부적으로 ROLE_ prefix 자동으로 붙임
                                 .anyRequest().authenticated()
                 )
