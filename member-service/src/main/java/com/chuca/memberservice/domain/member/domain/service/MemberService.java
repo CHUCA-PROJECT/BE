@@ -3,18 +3,22 @@ package com.chuca.memberservice.domain.member.domain.service;
 import com.chuca.memberservice.domain.member.application.dto.CheckDto;
 import com.chuca.memberservice.domain.member.application.dto.LoginDto;
 import com.chuca.memberservice.domain.member.application.dto.SignUpDto;
+import com.chuca.memberservice.domain.member.domain.constant.MemberProvider;
 import com.chuca.memberservice.domain.member.domain.constant.Role;
 import com.chuca.memberservice.domain.member.domain.entity.Member;
 import com.chuca.memberservice.domain.member.domain.repository.MemberRepository;
+import com.chuca.memberservice.global.dto.SocialLoginDto;
 import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.security.JwtProvider;
 import jakarta.transaction.Transactional;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -48,6 +52,41 @@ public class MemberService {
         return member;
     }
 
+    // 소셜 로그인 시 활용
+    @Builder
+    public Member(String email, MemberProvider provider, String phone, String nickname, String profileImage, Role role) {
+        Map<String, Object> settings = new LinkedHashMap<>();
+        settings.put("option1", true); // 관심 키워드
+        settings.put("option2", true); // 관심 카페
+        settings.put("option3", true); // 연락
+        settings.put("option4", true); // 야간 푸시 알림
+
+        this.email = email;
+        this.provider = provider;
+        this.phone = phone;
+        this.nickname = nickname;
+        this.profileImage = profileImage != null ? profileImage : "";
+        this.locTos = false;
+        this.adTos = false;
+        this.alarms = settings;
+        this.role = role;
+    }
+
+    // 소셜 회원가입
+    public Member socialSignup(MemberProvider memberProvider, SocialLoginDto.Request request) {
+        Member member = memberRepository.save(
+                new Member(
+                        request.getEmail(),
+                        memberProvider,
+                        request.getNickname(),
+                        request.getProfileImg(),
+                        request.get
+                )
+        );
+
+        return member;
+    }
+
     // 아이디 중복 확인
     public boolean checkId(String generalId) {
         Optional<Member> member = memberRepository.findByGeneralId(generalId);
@@ -64,12 +103,18 @@ public class MemberService {
         return true;
     }
 
-    // 회원 조회
+    // generalId 기준 회원 조회
     public Member getMember(String generalId) {
         Optional<Member> getMember = memberRepository.findByGeneralId(generalId);
         if(getMember.isEmpty())
             throw new BadRequestException("잘못된 아이디 입니다.", HttpStatus.BAD_REQUEST);
         return getMember.get();
+    }
+
+    // email 기준 회원 조회
+    public Member getMemberByEmail(String email) {
+        Member getMember = memberRepository.findByEmail(email);
+        return getMember;
     }
 
     // 비밀번호 체크

@@ -1,6 +1,7 @@
 package com.chuca.memberservice.domain.owner.domain.service;
 
 import com.chuca.memberservice.domain.member.domain.constant.Role;
+import com.chuca.memberservice.domain.member.domain.entity.Member;
 import com.chuca.memberservice.domain.owner.domain.constant.Bank;
 import com.chuca.memberservice.domain.owner.application.dto.BankDto;
 import com.chuca.memberservice.domain.owner.application.dto.CafeDto;
@@ -17,6 +18,7 @@ import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.exception.UnauthorizedException;
 import com.chuca.memberservice.global.feign.BusinessManClient;
 import com.chuca.memberservice.global.feign.PortOneClient;
+import com.chuca.memberservice.global.security.JwtProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -25,49 +27,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class OwnerService {
-//    @Value("${business.validate.key}")
-//    private String serviceKey;
 //    @Value("${imp.key}")
 //    private String impKey;
 //    @Value("${imp.secret}")
 //    private String impSecret;
 
+    private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
     private final OwnerRepository ownerRepository;
     private final CafeRepository cafeRepository;
-    private final BusinessManClient businessManClient;
     private final PortOneClient portOneClient;
-
-    // 회원가입 및 입점 신청
-//    public CafeDto.Response signup(OwnerDto.Request request) {
-//        String encodedPassword = passwordEncoder.encode(request.getPassword());
-//        Owner newOwner = Owner.builder()
-//                .email(request.getEmail())
-//                .businessNum(request.getBusinessNum())
-//                .businessImage(request.getBusinessImage())
-//                .openingDate(request.getOpeningDate())
-//                .password(encodedPassword)
-//                .name(request.getName())
-//                .phone(request.getPhone())
-//                .account(request.getAccount())
-//                .bank(request.getBank())
-//                .agreeOption(request.isAgreeOption())
-//                .nickname(request.getNickname())
-//                .profileImage(request.getProfileImage())
-//                .build();
-//        Owner owner = ownerRepository.save(newOwner);
-//
-//        Cafe newCafe = Cafe.builder()
-//                .request(request.getCafeDto())
-//                .owner(owner)
-//                .build();
-//        return new CafeDto.Response(cafeRepository.save(newCafe));
-//    }
 
     // 회원가입
     public Owner signup(OwnerDto.Request request) {
@@ -99,13 +76,22 @@ public class OwnerService {
         return cafeRepository.save(newCafe);
     }
 
-//    // 사업자 진위 여부 확인
-//    public Boolean checkBusinessNum(BusinessDto.Request request) {
-//        BusinessDto.Response response = businessManClient.checkValidate(serviceKey, request);
-//        BusinessDto.ValidData data = response.getData().get(0); // 요청을 List로 보내지만 실질적 데이터는 1개
-//        String valid = data.getValid(); // 01 : valid, 02 : invalid
-//        return valid.equals("01");
-//    }
+    // 사장님 조회
+    public Owner getOwner(String businessNum) {
+        Optional<Owner> owner = ownerRepository.findByBusinessNum(businessNum);
+        if(owner.isEmpty()) {
+            throw new BadRequestException("일치하는 회원을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+        return owner.get();
+    }
+
+    // 비밀번호 체크
+    public boolean checkPassword(Owner owner, String password) {
+        if(!passwordEncoder.matches(password, owner.getPassword())) {
+            throw new BadRequestException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+        return true;
+    }
 //
 //    // 계좌 실명 확인
 //    public String checkAccountRealName(BankDto request) {
@@ -126,15 +112,13 @@ public class OwnerService {
 //        return portOneResponse.getResponse().getBank_holder(); // 계좌 예금주명
 //    }
 
-    // 사장님 로그인
-    public LoginDto.Response login(LoginDto.Request request) {
-        String businessNum = request.getBusinessNum();
-        Owner owner = ownerRepository.findByBusinessNum(businessNum)
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 사업자 등록 번호 입니다."));
 
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        if(owner.getPassword().equals(encodedPassword))
-            return new LoginDto.Response("accessToken", "refreshToken"); // 임시
-        throw new BadRequestException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+    // 로그아웃
+    public boolean logout(String token) {
+        Map<String, Object> memberInfo = jwtProvider.getMemberInfoFromJwtToken(token);
+        Long memberId = (Long) memberInfo.get("memberId");
+        Role role = (Role) memberInfo.get("role");
+        jwtProvider.expireToken(memberId, role, token);
+        return true;
     }
 }

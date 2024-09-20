@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/member")
@@ -61,6 +62,8 @@ public class MemberController {
     // 테스트용
     @GetMapping("/test-gateway")
     public ResponseEntity<BaseResponse<String>> testGateway(@AuthenticationPrincipal Member member) {
+        log.info("/member/test-gateway 요청 들어옴");
+        log.info("memberId : " + member.getGeneralId());
         return ResponseEntity.ok(BaseResponse.create(member.getGeneralId()));
     }
 }
