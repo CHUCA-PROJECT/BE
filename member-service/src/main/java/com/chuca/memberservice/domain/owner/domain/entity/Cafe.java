@@ -1,6 +1,6 @@
 package com.chuca.memberservice.domain.owner.domain.entity;
 
-import com.chuca.memberservice.domain.owner.dto.CafeDto;
+import com.chuca.memberservice.domain.owner.application.dto.CafeDto;
 import com.chuca.memberservice.global.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

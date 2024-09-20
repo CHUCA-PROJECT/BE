@@ -20,10 +20,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 // Gateway로 요청 들어올 때 JWT 토큰 유효성 검사하는 필터
-@Component
 @Slf4j
+@Component
 public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<AuthorizationHeaderFilter.Config> {
-
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper = new ObjectMapper();
 

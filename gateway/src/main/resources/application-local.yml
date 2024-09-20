@@ -42,6 +42,22 @@ spring:
             - AuthorizationHeaderFilter
             - RewritePath=/api/v1/(?<segment>.*), /${segment}
 
+        - id: owner-for-signup/check/login/reissue
+          predicates:
+            - Path=/api/v1/owner/signup, /api/v1/owner/check, /api/v1/owner/login, /api/v1/owner/reissue
+            - Method=POST
+          uri: http://localhost:8081
+          filters:
+            - RewritePath=/api/v1/(?<segment>.*), /${segment}
 
+        # 위의 uri 제외한 나머지 owner 서비스의 요청 처리
+        - id: owner-all
+          predicates:
+            - Path=/api/v1/owner/**
+            - Method=POST,GET,PUT,DELETE,PATCH
+          uri: http://localhost:8081
+          filters:
+            - AuthorizationHeaderFilter
+            - RewritePath=/api/v1/(?<segment>.*), /${segment}
 jwt:
   secret: ${JWT_SECRET_KEY}

@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -80,8 +82,10 @@ public class MemberService {
 
     // 로그아웃
     public boolean logout(String token) {
-        Long memberId = jwtProvider.getMemberIdFromJwtToken(token);
-        jwtProvider.expireToken(memberId, token);
+        Map<String, Object> memberInfo = jwtProvider.getMemberInfoFromJwtToken(token);
+        Long memberId = (Long) memberInfo.get("memberId");
+        Role role = (Role) memberInfo.get("role");
+        jwtProvider.expireToken(memberId, role, token);
         return true;
     }
 }

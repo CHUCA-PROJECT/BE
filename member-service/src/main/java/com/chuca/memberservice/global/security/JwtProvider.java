@@ -1,13 +1,19 @@
 package com.chuca.memberservice.global.security;
 
+import com.chuca.memberservice.domain.member.domain.constant.Role;
 import com.chuca.memberservice.domain.member.domain.repository.MemberRepository;
 import com.chuca.memberservice.domain.member.domain.service.MemberDetailServiceImpl;
 import com.chuca.memberservice.domain.member.application.dto.LoginDto;
 import com.chuca.memberservice.domain.owner.domain.repository.OwnerRepository;
+import com.chuca.memberservice.domain.owner.domain.service.OwnerDetailServiceImpl;
 import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.util.RedisService;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import io.micrometer.common.util.StringUtils;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +24,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.time.Duration;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.hibernate.cfg.JdbcSettings.USER;
+
+// Role별로 토큰 다르게 발급(member, owner) + redis에 저장할 때도 단순히 memberId로 저장할게 아니라 role 붙여서 저장하기
+// 다 갈아엎어야 돼서 생각보다 할게 많을 것 같음 ㅠ
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,19 +41,24 @@ public class JwtProvider {
 
     @Value("${jwt.secret}")
     private String JWT_SECRET;
+    private SecretKey secretKey;
 
-    // 일반 유저
-    private final MemberDetailServiceImpl memberDetailService;
-    private final MemberRepository memberRepository;
-    private final OwnerRepository ownerRepository;
+    private final MemberDetailServiceImpl memberDetailService; // 일반 유저
+    private final OwnerDetailServiceImpl ownerDetailService; // 사장님
 
     private final RedisService redisService;
     private final Long tokenValidTime = 1000L * 60 * 60; // 1h
     private final Long refreshTokenValidTime = 1000L * 60 * 60 * 24 * 7; // 7d
 
+    // JWT_SECRET 문자열을 SecretKey 객체로 변환
+    @PostConstruct
+    public void afterPropertiesSet() {
+        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     // access token 생성
-    public String encodeJwtToken(Long memberId) {
+    public String encodeJwtToken(Long memberId, Role role) {
         Date now = new Date();
 
         return Jwts.builder()
@@ -50,12 +68,13 @@ public class JwtProvider {
                 .setSubject(memberId.toString())
                 .setExpiration(new Date(now.getTime() + tokenValidTime))
                 .claim("memberId", memberId)
-                .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
+                .claim("role", role.getRole())
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     // refresh token 생성
-    public String encodeJwtRefreshToken(Long memberId) {
+    public String encodeJwtRefreshToken(Long memberId, Role role) {
         Date now = new Date();
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
@@ -63,38 +82,66 @@ public class JwtProvider {
                 .setSubject(memberId.toString())
                 .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
                 .claim("memberId", memberId)
-                .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
+                .claim("role", role.getRole())
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     // 토큰 재발급 (access token, refresh token 둘 다 재발급)
     public LoginDto.Response regenerateToken(String token) {
-        Long memberId = getMemberIdFromJwtToken(token);
-        String storedRefreshToken = redisService.getValues(String.valueOf(memberId));
+        Map<String, Object> memberInfo = getMemberInfoFromJwtToken(token);
+        Long memberId = (Long) memberInfo.get("memberId");
+        Role role = (Role) memberInfo.get("role");
+
+        String storeKey = role.getRole() + ":" + memberId;
+        String storedRefreshToken = redisService.getValues(storeKey);
 
         if(storedRefreshToken == null || !storedRefreshToken.equals(token))
             throw new BadRequestException("RefreshToken이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
 
-        String newAccessToken = encodeJwtToken(memberId); // access token 재발급
-        String newRefreshToken = encodeJwtRefreshToken(memberId); // refresh token 재발급
-        storeJwtRefreshToken(memberId, newRefreshToken); // redis에 refresh 저장
+        String newAccessToken = encodeJwtToken(memberId, role); // access token 재발급
+        String newRefreshToken = encodeJwtRefreshToken(memberId, role); // refresh token 재발급
+        storeJwtRefreshToken(memberId, role, newRefreshToken); // redis에 refresh 저장
 
         return new LoginDto.Response(newAccessToken, newRefreshToken);
     }
 
-    // JWT 토큰으로부터 memberId 추출
-    public Long getMemberIdFromJwtToken(String token) {
+//    // JWT 토큰으로부터 memberId 추출
+//    public Long getMemberIdFromJwtToken(String token) {
+//        try {
+//            Claims claims = Jwts.parser()
+//                    .setSigningKey(JWT_SECRET)
+//                    .parseClaimsJws(token)
+//                    .getBody();
+//            return Long.parseLong(claims.getSubject());
+//        } catch(Exception e) {
+//            throw new io.jsonwebtoken.JwtException(e.getMessage());
+//        }
+//    }
+
+    // JWT 토큰으로부터 memberId 및 role 추출
+    public Map<String, Object> getMemberInfoFromJwtToken(String token) {
         try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(JWT_SECRET)
+            Claims claims = Jwts
+                    .parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
                     .parseClaimsJws(token)
                     .getBody();
-            return Long.parseLong(claims.getSubject());
-        } catch(Exception e) {
-            throw new io.jsonwebtoken.JwtException(e.getMessage());
+
+            Long memberId = Long.parseLong(claims.getSubject());
+            String roleStr = claims.get("role", String.class);
+            Role role = Role.valueOf(roleStr.replace("ROLE_", "")); // Role Enum으로 변환
+
+            Map<String, Object> memberInfo = new HashMap<>();
+            memberInfo.put("memberId", memberId);
+            memberInfo.put("role", role);
+
+            return memberInfo;
+        } catch (Exception e) {
+            throw new JwtException(e.getMessage());
         }
     }
-
 
     // Autorization : Bearer에서 token 추출 (refreshToken, accessToken 포함)
     public String resolveToken(HttpServletRequest request) {
@@ -113,8 +160,10 @@ public class JwtProvider {
 
         try{
             // 주어진 토큰을 파싱하고 검증.
-            Jws<Claims> claims = Jwts.parser()
-                    .setSigningKey(JWT_SECRET)
+            Jws<Claims> claims = Jwts
+                    .parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
                     .parseClaimsJws(token);
 
             Long memberId = claims.getBody().get("memberId", Long.class);
@@ -132,7 +181,7 @@ public class JwtProvider {
             }
 
             return !claims.getBody().getExpiration().before(new Date(now.getTime()));
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+        } catch (SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
@@ -146,20 +195,38 @@ public class JwtProvider {
 
     // JWT 토큰 인증 정보 조회 (토큰 복호화)
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = memberDetailService.loadUserByUsername(this.getMemberIdFromJwtToken(token).toString());
+        Map<String, Object> memberInfo = getMemberInfoFromJwtToken(token);
+        Long memberId = (Long) memberInfo.get("memberId");
+        Role role = (Role) memberInfo.get("role");
+        UserDetails userDetails = null;
+
+        switch(role) {
+            case USER:
+                userDetails = memberDetailService.loadUserByUsername(memberId.toString());
+                break;
+            case OWNER:
+                userDetails = ownerDetailService.loadUserByUsername(memberId.toString());
+                break;
+            case ADMIN: // ADMIN일 때 어케야 되나용?????
+                userDetails = memberDetailService.loadUserByUsername(memberId.toString());
+                break;
+        }
         return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
 
     // refresh token redis에 저장
-    public void storeJwtRefreshToken(Long memberId, String token) {
-        redisService.setValues(String.valueOf(memberId), token, Duration.ofSeconds(refreshTokenValidTime));
+    public void storeJwtRefreshToken(Long memberId, Role role, String token) {
+        String storeKey = role.getRole() + ":" + memberId;
+        redisService.setValues(storeKey, token, Duration.ofSeconds(refreshTokenValidTime));
     }
 
     // 로그아웃을 위한 토큰 만료
-    public void expireToken(Long memberId, String token) {
+    public void expireToken(Long memberId, Role role, String token) {
         long expiredAccessTokenTime = getExpiredTime(token).getTime() - new Date().getTime();
+        String storeKey = role.getRole() + ":" + memberId;
+
         // 1. Redis에 액세스 토큰값을 key로 가지는 memberId 값 저장 (블랙리스트 처리)
-        redisService.setValues(token,String.valueOf(memberId), Duration.ofSeconds(expiredAccessTokenTime));
+        redisService.setValues(token, storeKey, Duration.ofSeconds(expiredAccessTokenTime));
         // 2. Redis에 저장된 refreshToken 삭제
         redisService.deleteValues(String.valueOf(memberId));
     }
@@ -167,8 +234,9 @@ public class JwtProvider {
     // 토큰 유효 시간 계산
     public Date getExpiredTime(String token){
         return Jwts
-                .parser()
-                .setSigningKey(JWT_SECRET)
+                .parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();
