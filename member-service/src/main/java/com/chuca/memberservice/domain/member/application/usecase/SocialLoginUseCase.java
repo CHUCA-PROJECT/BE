@@ -1,6 +1,7 @@
 package com.chuca.memberservice.domain.member.application.usecase;
 
 import com.chuca.memberservice.domain.member.application.dto.LoginDto;
+import com.chuca.memberservice.domain.member.application.dto.SignUpDto;
 import com.chuca.memberservice.domain.member.domain.constant.MemberProvider;
 import com.chuca.memberservice.domain.member.domain.entity.Member;
 import com.chuca.memberservice.domain.member.domain.service.MemberService;
@@ -29,12 +30,17 @@ public class SocialLoginUseCase {
     // 소셜 로그인
     public LoginDto.Response socialLogin(String socialType, SocialLoginDto.Request request) {
         Member member = memberService.getMemberByEmail(request.getEmail());
-        if(member == null) { // 회원가입 필요
+        if(member == null) { // 1. 회원가입 필요
             MemberProvider memberProvider = getMemberProvider(socialType);
-            memberService.socialSignup(memberProvider, request);
+            member = memberService.socialSignup(memberProvider, request);
         }
 
         // 토큰 발급
+        String accessToken = jwtProvider.encodeJwtToken(member.getId(), member.getRole()); // 2. access token 발급
+        String refreshToken = jwtProvider.encodeJwtRefreshToken(member.getId(), member.getRole()); // 3. refresh token 발급
+        jwtProvider.storeJwtRefreshToken(member.getId(), member.getRole(), refreshToken); // 4. redis에 refresh token 저장
+
+        return new LoginDto.Response(accessToken, refreshToken);
 
     }
 

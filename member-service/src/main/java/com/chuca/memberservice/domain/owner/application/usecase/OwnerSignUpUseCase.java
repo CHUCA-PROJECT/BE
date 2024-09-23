@@ -1,5 +1,6 @@
 package com.chuca.memberservice.domain.owner.application.usecase;
 
+import com.chuca.memberservice.domain.owner.application.dto.BankDto;
 import com.chuca.memberservice.domain.owner.application.dto.CafeDto;
 import com.chuca.memberservice.domain.owner.application.dto.OwnerDto;
 import com.chuca.memberservice.domain.owner.domain.entity.Cafe;
@@ -42,4 +43,9 @@ public class OwnerSignUpUseCase {
         String valid = data.getValid(); // 01 : valid, 02 : invalid
         return valid.equals("01");
     }
+
+//    // 계좌 실명 조회
+//    public String checkAccountRealName(BankDto request) {
+//        BankDto ownerService.checkAccountRealName(request);
+//    }
 }

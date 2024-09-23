@@ -7,6 +7,7 @@ import com.chuca.memberservice.domain.member.domain.service.MemberService;
 import com.chuca.memberservice.global.annotation.UseCase;
 import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.security.JwtProvider;
+import com.chuca.memberservice.global.util.MailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,8 +17,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public class SignUpUseCase {
     private final MemberService memberService;
+    private final MailService mailService;
     private final JwtProvider jwtProvider;
-    
+
     // 회원가입
     public SignUpDto.Response signup(SignUpDto.Request request) {
         if(!checkId(request.getGeneralId()).isCheck()) {
@@ -49,4 +51,9 @@ public class SignUpUseCase {
     }
 
     // 휴대폰 인증
+
+    // 메일 인증
+    public String checkMail(String email) {
+        return mailService.sendCodeMail(email);
+    }
 }

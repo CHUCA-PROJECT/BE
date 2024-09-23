@@ -52,35 +52,18 @@ public class MemberService {
         return member;
     }
 
-    // 소셜 로그인 시 활용
-    @Builder
-    public Member(String email, MemberProvider provider, String phone, String nickname, String profileImage, Role role) {
-        Map<String, Object> settings = new LinkedHashMap<>();
-        settings.put("option1", true); // 관심 키워드
-        settings.put("option2", true); // 관심 카페
-        settings.put("option3", true); // 연락
-        settings.put("option4", true); // 야간 푸시 알림
-
-        this.email = email;
-        this.provider = provider;
-        this.phone = phone;
-        this.nickname = nickname;
-        this.profileImage = profileImage != null ? profileImage : "";
-        this.locTos = false;
-        this.adTos = false;
-        this.alarms = settings;
-        this.role = role;
-    }
-
     // 소셜 회원가입
     public Member socialSignup(MemberProvider memberProvider, SocialLoginDto.Request request) {
         Member member = memberRepository.save(
                 new Member(
+                        request.getTargetId(), // for. kakao login (targetId를 generalId에 저장)
                         request.getEmail(),
                         memberProvider,
+                        request.isLocTos(),
+                        request.isAdTos(),
                         request.getNickname(),
                         request.getProfileImg(),
-                        request.get
+                        Role.USER
                 )
         );
 

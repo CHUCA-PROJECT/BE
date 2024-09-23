@@ -7,8 +7,10 @@ import com.chuca.memberservice.domain.member.application.usecase.LoginUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.ReissueUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.SignUpUseCase;
 import com.chuca.memberservice.domain.member.domain.entity.Member;
+import com.chuca.memberservice.global.dto.EmailDto;
 import com.chuca.memberservice.global.response.BaseResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,11 @@ public class MemberController {
 
     // 휴대전화 인증
 
+    // 메일 인증
+    @PostMapping("/check-email")
+    public ResponseEntity<BaseResponse<String>> checkEmail(@RequestBody @Valid EmailDto.Request request) {
+        return ResponseEntity.ok(BaseResponse.create(signUpUseCase.checkMail(request.getEmail())));
+    }
 
     // 아이디 중복 확인
     @GetMapping("/check-id")

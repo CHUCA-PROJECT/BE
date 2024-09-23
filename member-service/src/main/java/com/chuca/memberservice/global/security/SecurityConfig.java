@@ -45,7 +45,8 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger/**", "/swagger-resources/**", "/swagger-ui.html",
                         "/configuration/ui",  "/v3/api-docs/**", "/h2-console/**", "/oauth/**",
                         "/member/signup", "/member/check-id", "/member/login", "/member/reissue",
-                        "/owner/signup", "/owner/check", "/owner/login", "/owner/reissue");
+                        "/owner/signup", "/owner/check", "/owner/login", "/owner/reissue",
+                        "/member/check-email");
     }
 
     @Bean
@@ -68,6 +69,7 @@ public class SecurityConfig {
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/signup")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/login")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/check-id")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/check-email")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/reissue")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/owner/signup")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/owner/login")).permitAll()
