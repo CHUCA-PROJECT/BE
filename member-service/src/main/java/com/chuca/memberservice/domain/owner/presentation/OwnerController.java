@@ -1,5 +1,6 @@
 package com.chuca.memberservice.domain.owner.presentation;
 
+import com.chuca.memberservice.domain.owner.application.dto.BankDto;
 import com.chuca.memberservice.domain.owner.application.dto.CafeDto;
 import com.chuca.memberservice.domain.owner.application.dto.LoginDto;
 import com.chuca.memberservice.domain.owner.application.dto.OwnerDto;
@@ -33,13 +34,13 @@ public class OwnerController {
     public ResponseEntity<BaseResponse<Boolean>> checkBusinessNum(@RequestBody @Validated BusinessDto.Request request) {
         return ResponseEntity.ok(BaseResponse.create(ownerSignUpUseCase.checkBusinessNum(request)));
     }
-//
-//    // 3. 계좌 실명 조회
-//    @PostMapping("/bank")
-//    public ResponseEntity<BaseResponse<String>> checkAccountRealName(@RequestBody @Validated BankDto request) {
-//        return ResponseEntity.ok(BaseResponse.create(ownerService.checkAccountRealName(request)));
-//    }
-//
+
+    // 계좌 실명 조회
+    @PostMapping("/bank")
+    public ResponseEntity<BaseResponse<String>> checkAccountRealName(@RequestBody @Validated BankDto request) {
+        return ResponseEntity.ok(BaseResponse.create(ownerSignUpUseCase.checkAccountRealName(request)));
+    }
+
     // 사장님 로그인
     @PostMapping("/login")
     public ResponseEntity<BaseResponse<LoginDto.Response>> login(@RequestBody @Validated LoginDto.Request request) {

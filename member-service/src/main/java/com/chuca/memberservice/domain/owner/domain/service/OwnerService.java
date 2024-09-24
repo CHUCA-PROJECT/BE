@@ -35,16 +35,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class OwnerService {
-//    @Value("${imp.key}")
-//    private String impKey;
-//    @Value("${imp.secret}")
-//    private String impSecret;
-
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
     private final OwnerRepository ownerRepository;
     private final CafeRepository cafeRepository;
-    private final PortOneClient portOneClient;
 
     // 회원가입
     public Owner signup(OwnerDto.Request request) {
@@ -92,26 +86,6 @@ public class OwnerService {
         }
         return true;
     }
-//
-//    // 계좌 실명 확인
-//    public String checkAccountRealName(BankDto request) {
-//        TokenDto.Request tokenRequest = TokenDto.Request.builder()
-//                .imp_key(impKey)
-//                .imp_secret(impSecret)
-//                .build();
-//
-//        TokenDto.Response tokenResponse = portOneClient.getToken(tokenRequest);
-//        if(tokenResponse.getCode() != 0)
-//            throw new UnauthorizedException("Access token 발급에 실패했습니다.", HttpStatus.UNAUTHORIZED);
-//
-//        Bank bank = request.getBank_code();
-//        String accessToken = "Bearer " + tokenResponse.getResponse().getAccess_token();
-//        PortOneDto portOneResponse = portOneClient.getBankHolder(accessToken, bank.getValue(), request.getBank_num());
-//        if(portOneResponse.getCode() != 0)
-//            throw new BadRequestException("계좌 정보 조회에 실패했습니다.", HttpStatus.UNAUTHORIZED);
-//        return portOneResponse.getResponse().getBank_holder(); // 계좌 예금주명
-//    }
-
 
     // 로그아웃
     public boolean logout(String token) {

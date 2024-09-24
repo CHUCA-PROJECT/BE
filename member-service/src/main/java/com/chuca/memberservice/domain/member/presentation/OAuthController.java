@@ -31,10 +31,4 @@ public class OAuthController {
         return ResponseEntity.ok(BaseResponse.create(socialLoginUsecase.socialLogin(socialType, request)));
 
     }
-
-    // 카카오 로그인 탈퇴
-
-    // 네이버 로그인 탈퇴
-
-    // 구글 로그인 탈퇴
 }

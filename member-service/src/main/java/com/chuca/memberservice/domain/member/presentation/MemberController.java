@@ -27,7 +27,7 @@ public class MemberController {
     private final LoginUseCase loginUseCase;
     private final ReissueUseCase reissueUseCase;
 
-    // 휴대전화 인증
+    // 휴대전화 인증 (일단 메일 인증 사용 -> 리팩토링 단계에서 휴대전화 인증 사용할 예정)
 
     // 메일 인증
     @PostMapping("/check-email")
