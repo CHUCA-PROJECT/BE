@@ -44,8 +44,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 
             mapper.writeValue(response.getOutputStream(), body);
             logger.info("jwt exception nullpointer");
-        }
-        catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {
             final Map<String, Object> body = new HashMap<>();
             final ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());

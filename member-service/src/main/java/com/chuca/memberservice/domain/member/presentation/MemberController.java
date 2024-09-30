@@ -7,8 +7,10 @@ import com.chuca.memberservice.domain.member.application.usecase.LoginUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.ReissueUseCase;
 import com.chuca.memberservice.domain.member.application.usecase.SignUpUseCase;
 import com.chuca.memberservice.domain.member.domain.entity.Member;
+import com.chuca.memberservice.global.dto.EmailDto;
 import com.chuca.memberservice.global.response.BaseResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/member")
@@ -24,8 +27,13 @@ public class MemberController {
     private final LoginUseCase loginUseCase;
     private final ReissueUseCase reissueUseCase;
 
-    // 휴대전화 인증
+    // 휴대전화 인증 (일단 메일 인증 사용 -> 리팩토링 단계에서 휴대전화 인증 사용할 예정)
 
+    // 메일 인증
+    @PostMapping("/check-email")
+    public ResponseEntity<BaseResponse<String>> checkEmail(@RequestBody @Valid EmailDto.Request request) {
+        return ResponseEntity.ok(BaseResponse.create(signUpUseCase.checkMail(request.getEmail())));
+    }
 
     // 아이디 중복 확인
     @GetMapping("/check-id")
@@ -61,6 +69,8 @@ public class MemberController {
     // 테스트용
     @GetMapping("/test-gateway")
     public ResponseEntity<BaseResponse<String>> testGateway(@AuthenticationPrincipal Member member) {
+        log.info("/member/test-gateway 요청 들어옴");
+        log.info("memberId : " + member.getGeneralId());
         return ResponseEntity.ok(BaseResponse.create(member.getGeneralId()));
     }
 }

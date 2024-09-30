@@ -44,10 +44,11 @@ public class SecurityConfig {
         return web -> web.ignoring()
                 .requestMatchers("/swagger-ui/**", "/swagger/**", "/swagger-resources/**", "/swagger-ui.html",
                         "/configuration/ui",  "/v3/api-docs/**", "/h2-console/**", "/oauth/**",
-                        "/member/signup", "/member/check-id", "/member/login", "/member/reissue");
+                        "/member/signup", "/member/check-id", "/member/login", "/member/reissue",
+                        "/owner/signup", "/owner/check", "/owner/login", "/owner/reissue",
+                        "/member/check-email");
     }
 
-    //선언 방식이 3.x에서 바뀜
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration) throws Exception {
         return authConfiguration.getAuthenticationManager();
@@ -68,9 +69,15 @@ public class SecurityConfig {
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/signup")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/login")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/check-id")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/check-email")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/member/reissue")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/owner/signup")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/owner/login")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/owner/reissue")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/owner/check")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                                .requestMatchers("/test").hasRole("ADMIN") // 내부적으로 ROLE_ prefix 자동으로 붙임
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/owner/**")).hasAnyRole("OWNER", "ADMIN") // 내부적으로 ROLE_ prefix 자동으로 붙임
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/member/**")).hasAnyRole("USER", "ADMIN") // 내부적으로 ROLE_ prefix 자동으로 붙임
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling

@@ -25,7 +25,7 @@ public class OwnerDto {
         @NotBlank(message = "사업자 등록번호 사본를 첨부해주세요")
         private String businessImage; // 사업자 등록번호 사본
 
-        @NotBlank(message = "개업일자를 입력해주세요.")
+        @NotNull(message = "개업일자를 입력해주세요.")
         private LocalDate openingDate; // 개업일자
 
         @Pattern(regexp = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,16}", message = "비밀번호는 영문자, 숫자, 특수문자 조합을 입력해야합니다.")
@@ -40,7 +40,7 @@ public class OwnerDto {
         @NotBlank(message = "계좌번호를 입력해주세요.")
         private String account; // 계좌번호
 
-        @Enum(enumClass = Bank.class)
+        @Enum(enumClass = Bank.class, message = "올바른 은행 값을 입력하세요.")
         private Bank bank; // 은행
 
         @NotNull

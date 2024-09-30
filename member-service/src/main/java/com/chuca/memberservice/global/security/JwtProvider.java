@@ -1,10 +1,8 @@
 package com.chuca.memberservice.global.security;
 
 import com.chuca.memberservice.domain.member.domain.constant.Role;
-import com.chuca.memberservice.domain.member.domain.repository.MemberRepository;
 import com.chuca.memberservice.domain.member.domain.service.MemberDetailServiceImpl;
 import com.chuca.memberservice.domain.member.application.dto.LoginDto;
-import com.chuca.memberservice.domain.owner.domain.repository.OwnerRepository;
 import com.chuca.memberservice.domain.owner.domain.service.OwnerDetailServiceImpl;
 import com.chuca.memberservice.global.exception.BadRequestException;
 import com.chuca.memberservice.global.util.RedisService;
@@ -30,10 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hibernate.cfg.JdbcSettings.USER;
 
-// Role별로 토큰 다르게 발급(member, owner) + redis에 저장할 때도 단순히 memberId로 저장할게 아니라 role 붙여서 저장하기
-// 다 갈아엎어야 돼서 생각보다 할게 많을 것 같음 ㅠ
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -167,7 +162,10 @@ public class JwtProvider {
                     .parseClaimsJws(token);
 
             Long memberId = claims.getBody().get("memberId", Long.class);
-            log.info("validateToken ------- memberId : " + memberId);
+            String role = claims.getBody().get("role", String.class);
+
+            log.info("validateToken ------- memberId : {}", memberId);
+            log.info("validateToken ------- role : {}", role);
 
             /*
              * 이미 로그아웃 or 하이재킹 당한 토큰으로 로그인 시도중인지 체크
