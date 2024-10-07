@@ -34,7 +34,7 @@ public class MailService {
     private MimeMessage createCodeMessage(String code, String emailTo) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         message.addRecipients(MimeMessage.RecipientType.TO, emailTo); // 보내는 사람
-        message.setSubject("CHUCA 이메일 인증번호 :"); // 메일 제목
+        message.setSubject("\uD83C\uDF89 CHUCA 이메일 인증번호 \uD83C\uDF89"); // 메일 제목
         message.setText(code, "utf-8", "html"); // 내용, charset타입, subtype
         message.setFrom(new InternetAddress(email,"CHUCA_Official")); // 보내는 사람의 메일 주소, 보내는 사람 이름
 

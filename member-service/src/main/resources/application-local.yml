@@ -32,7 +32,7 @@ spring:
       port: 6379
 
   mail:
-    host: stmp.google.com
+    host: smtp.gmail.com
     port: 587
     default-encoding: UTF-8
     username: ${GOOGLE_USERNAME}
