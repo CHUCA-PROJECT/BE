@@ -65,7 +65,7 @@ public class Member extends BaseTime implements UserDetails {
 
     @Type(JsonType.class)
     @Column(name = "alarms", columnDefinition = "longtext")
-    private Map<String, Object> alarms = new LinkedHashMap<>();     // 알림 설정 (관심 키워드, 관심 카페, 연락, 야간 푸시 알림)\
+    private Map<String, Object> alarms = new LinkedHashMap<>();     // 알림 설정 (관심 키워드, 관심 카페, 연락, 야간 푸시 알림)
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

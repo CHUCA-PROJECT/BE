@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Role {
     USER("ROLE_USER"),
+    GUEST("ROLE_GUEST"),
     OWNER("ROLE_OWNER"),
     ADMIN("ROLE_ADMIN");
-
     private final String role;
 
     // Enum의 ROLE 조회
